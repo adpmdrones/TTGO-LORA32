@@ -32,10 +32,16 @@
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
+//UART pins
+#define TX1_pin  12
+#define RX1_pin  13
+
 //packet counter
 int counter = 0;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
+
+
 
 void setup() {
 
@@ -61,8 +67,12 @@ void setup() {
   
   //initialize Serial Monitor
   Serial.begin(115200);
-  
+ 
   Serial.println("LoRa Sender Test");
+
+  //initialize serial
+  Serial1.begin(115200, SERIAL_8N1, RX1_pin, TX1_pin);
+
 
   //SPI LoRa pins
   SPI.begin(SCK, MISO, MOSI, SS);
@@ -85,9 +95,15 @@ void loop() {
   Serial.print("Sending packet: ");
   Serial.println(counter);
 
+
+
   //Send LoRa packet to receiver
   LoRa.beginPacket();
-  LoRa.print("hello ");
+  //LoRa.print("hello ");
+  if (Serial1.available()) {
+    Serial.print(Serial1.readString());
+    LoRa.print(Serial1.readString());
+  }
   LoRa.print(counter);
   LoRa.endPacket();
   
@@ -105,5 +121,5 @@ void loop() {
 
   counter++;
   
-  delay(10000);
+  delay(1000);
 }
